@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>canvasClock</title>
+	<meta name = "keywords" content="时钟,闹钟,clock">
+	<meta name = "description" content="This page is about the clock written by canvas.">
+	<meta name = "author" content="Allenem">
+</head>
+<body>
+	<canvas id="clk" width="500" height="500" style="margin: 50px auto;display: block;background:url(humor.png) no-repeat">当前浏览器不支持canvas</canvas>
+	<script>
+		// 获取元素
+		var clk = document.getElementById('clk')
+		var ctx = clk.getContext('2d')
+
+		// 绘制刻度函数
+		const drawScales = (count,linew,strokeStyle,angle,from) => {
+			for (var i = 0; i < count; i++) {
+				ctx.save() //保存之前样式
+				ctx.lineWidth = linew //线宽
+				ctx.strokeStyle = strokeStyle
+				ctx.translate(250,250) //设置异次元空间原点
+				ctx.rotate(i * angle * Math.PI / 180) //旋转角度
+				ctx.beginPath()
+				ctx.moveTo(0,from) //画线,从坐标0,from开始
+				ctx.lineTo(0,-195) //到坐标0,-195结束
+				ctx.stroke()
+				ctx.closePath()
+				ctx.restore()
+			}
+		}
+
+		// 绘制表针函数
+		const drawHand = (linew,color,what,angle,from,to) => {
+			ctx.save()
+			ctx.lineWidth = linew
+			ctx.strokeStyle = color
+			ctx.translate(250,250)
+			ctx.rotate(what*angle*Math.PI/180)
+			ctx.beginPath()
+			ctx.moveTo(0,from)
+			ctx.lineTo(0,to)
+			ctx.stroke()
+			ctx.closePath()
+		}
+
+		// 绘制装饰函数
+		const drawDecoration = (y) => {
+			ctx.beginPath()
+			ctx.strokeStyle = "#f00"  //描边颜色
+			ctx.fillStyle = "#fff"  //填充颜色
+			ctx.arc(0,y,5,0,360,false)
+			ctx.stroke()  //描边
+			ctx.fill()  //填充
+			ctx.closePath()
+		}
+
+		const drawClock = () => {
+			ctx.clearRect(0,0,500,500)  // 清除画布
+
+			// 获取时间，小时将24小时转为12小时
+			
+			var now = new Date()
+			var	hour = now.getHours()
+			var	min = now.getMinutes()
+			var	sec = now.getSeconds()
+
+			hour = hour + min / 60
+			hour = hour > 12? hour-12 : hour 
+			min = min + sec / 60
+
+			// 绘制表盘外圈
+
+			ctx.beginPath() //画笔开始
+			ctx.lineWidth = 5 //画笔线宽
+			ctx.strokeStyle = "#A61C3E" //画笔颜色
+			ctx.arc(250,250,200,0,360,false) //圆心(250,250),半径200，起始角度0,360，顺时针
+			ctx.stroke() //绘图
+			ctx.closePath() //结束画布
+
+			// 绘制表盘数字
+			
+			var tangleNum = -60 //tangleNum存储对应点角度，1点是-60°，2点-30°，3点0°，……
+			var	radius = 150 //点数半径150
+			var	num=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ','Ⅺ','Ⅻ'] //存储点数对应的罗马数字
+			for (var i = 0; i < num.length; i++) {
+				var x
+				var y
+				//填写数字起始点（250，250）为圆心，150为半径
+				x = 250 + Math.cos(tangleNum * Math.PI / 180) * radius
+				y = 250 + Math.sin(tangleNum * Math.PI / 180) * radius
+				ctx.beginPath()
+				ctx.fillStyle = '#00f'
+				ctx.font = '18px times-new-roman'
+				ctx.textAlign = 'center'
+				ctx.fillText(num[i],x,y)
+				ctx.fill()
+				tangleNum += 30				
+			}
+
+			// 绘制分针刻度
+			drawScales(60,2,'#abc',6,-180)
+
+			// 绘制时针刻度
+			drawScales(12,7,'#567',30,-170)
+
+			// 绘制时针
+			drawHand(9,"#000",hour,30,-140,10)
+			ctx.restore()
+
+			// 绘制分针
+			drawHand(6,"#000",min,6,-160,15)
+			ctx.restore()
+
+			// 绘制秒针
+			drawHand(3,"#f00",sec,6,-185,20)
+			// 装饰3针交汇处
+			drawDecoration(0)
+			// 装饰秒针某一处
+			drawDecoration(-160)
+			ctx.restore()
+		}
+
+		setInterval(drawClock,1000)
+
+	</script>
+</body>
+</html>

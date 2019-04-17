@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>抖音汉字时钟</title>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+		}
+
+		div{
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			margin: auto;
+		}
+
+		#box{
+			overflow: hidden;
+			width: 100vw;
+			height: 100vh;
+		}
+
+		#box > div{
+			border-radius: 50%;
+			/*border: 1px solid;*/
+			transition: .8s
+		}
+
+		#box > div > div{
+			width: 75px;
+			height: 30px;
+			font-size: 14px;
+			/*border: 1px solid blue;*/
+			text-shadow: 2px 2px 2px rgb(0,0,0,.5);
+			text-align: right;
+			line-height: 30px;
+			transform: rotate(0deg) translateX(0px);
+		}
+
+		.year{
+			width: 100px;
+			height: 30px;
+			font-size: 14px;
+			line-height: 30px;
+			text-align: center;
+		}
+
+		#box .now{
+			color: red;
+			text-shadow: 2px 2px 2px rgb(255,0,0,.5)
+		}
+
+	</style>
+	<script src="https://momentjs.com/downloads/moment.js"></script>
+</head>
+<body>
+	<div id="box">
+		<div class="year now">二零一九年</div>
+		<div class="month"></div>
+		<div class="day"></div>
+		<div class="hour"></div>
+		<div class="minute"></div>
+		<div class="second"></div>
+	</div>
+	<script>
+		const box = document.getElementById('box')
+		const divs = [...box.children] //获取box里的div,转为数组，使用forEach
+
+		//绘制每一个div的位置
+		divs.forEach((v,i) =>{
+			if(i){
+				v.style.width = v.style.height = 150 * i +50 + 'px'
+			}
+		})
+
+		const chinese = ["零","一","二","三","四","五","六","七","八","九"]
+		const unit = '月号点分秒' //单位
+		
+		// 数字转中文API
+		const toChinese = v => {
+			let str = ''
+			if (v.length===1) {
+				str = chinese[v]
+			}else{
+				let s1 = v[0]
+				let s2 = v[1]
+				str = (s1 ==1? "" : chinese[s1]) + '十' + (s2 ==0? "" : chinese[s2])
+			} 
+			return str;
+		}
+		/*// 测试数字转中文API
+		console.log(toChinese('10'))*/
+		
+		/*// 格式化单位API 虽然后面没用
+		const converter = d => {
+			let YY = d.shift()
+			let year = ''
+
+			for (let y of YY) {
+				year += chinese[y]
+			}
+			year += '年'
+
+			d.forEach((v,i) => {
+				d.splice(i,1,toChinese(v)+unit[i])
+			})
+			return [year,...d]
+		}*/
+		 
+		/*// 测试格式化单位API
+		let date = moment().format('YYYY,M,D,H,m,s').split(',')
+		console.log(date)
+		let date2 = converter(date)
+		console.log(date2)*/
+
+		// 注意这里使用了反引号``
+		const getString = obj => `<div style='transform: rotate(${obj.rotate}deg) translateX(${obj.tranX }px);'>${ obj.text}</div>`
+
+		/*// 测试getString
+		console.log(getString({
+			rotate: 45,
+			tranX: 120,
+			text: '这是一个测试div'
+		}))*/
+		
+		const second = document.getElementsByClassName('second')[0]
+		const minute = document.getElementsByClassName('minute')[0]
+		const hour = document.getElementsByClassName('hour')[0]
+		const day = document.getElementsByClassName('day')[0]
+		const month = document.getElementsByClassName('month')[0]
+
+		let secDiv = ''
+		let minDiv = ''
+		let horDiv = ''
+		let dayDiv = ''
+		let monDiv = ''
+
+		for (var i = 0; i <60; i++) {
+			// 生成秒盘
+			secDiv += getString({
+				rotate: 6 * i,
+				tranX: 363,
+				text: toChinese(i+"")+'秒'				
+			})
+			// 生成分盘
+			minDiv += getString({
+				rotate: 6 * i,
+				tranX: 288,
+				text: toChinese(i+"")+'分'				
+			})
+
+			// 生成时盘
+			if(i < 24){
+				horDiv += getString({
+					rotate: 15 * i,
+					tranX: 210,
+					text: toChinese(i+"")+'点'
+				})
+			}
+
+			// 生成日盘
+			if(i < 31){
+				dayDiv += getString({
+					rotate: 11.6129 * i,
+					tranX: 135,
+					text: toChinese(i+1+"")+'号'
+				})
+			}
+
+			// 生成月盘	
+			if(i < 12){
+				monDiv += getString({
+					rotate: 30 * i,
+					tranX: 58,
+					text: toChinese(i+1+"")+'月'
+				})
+			}		
+		}
+
+		second.innerHTML = secDiv
+		minute.innerHTML = minDiv
+		hour.innerHTML = horDiv
+		day.innerHTML = dayDiv
+		month.innerHTML = monDiv
+
+		let oldDate = moment('2019-1-1 00:00:00').format('YYYY,M,D,H,m,s').split(',')
+
+		// 控制旋转角度
+		const handler = () => {
+			let date = moment().format('YYYY,M,D,H,m,s').split(',')
+
+			date.forEach((v,i) => {
+				if(v != oldDate[i]){
+					let base = 0  //默认旋转角度
+					let number = 0  //记录任意一个盘的时刻
+					switch(i){
+						// 月
+						case 1:
+						number = date[i] - 1
+						base = -30 * number
+						break;
+						// 日
+						case 2:
+						number = date[i] - 1
+						base = -11.6129 * number
+						break;
+						// 时
+						case 3:
+						number = date[i]
+						base = -15 * number
+						break;
+						// 分、秒
+						default:
+						number = date[i]
+						base = -6 * number
+						break;
+					}
+
+					// 异步更新，解决59到0回转问题步骤1
+					if(base == 0){
+						base = -360
+					}
+
+					divs[i].dataset.number = number
+					divs[i].style.transform = `rotate(${base}deg)`  //注意反引号``
+
+					// 添加now类使当前时刻变红
+					let child = divs[i].children
+					let prevChild = child[number == 0? child.length-1 : number-1]
+					if(prevChild.classList.contains('now')){
+						prevChild.classList.remove('now')
+					}
+					child[number].classList.add('now')
+				}
+			})
+
+			oldDate = date
+		}
+
+		// 异步更新，解决59到0回转问题步骤2
+		divs.forEach((v,i) => {
+			v.addEventListener('transitionend',() => {
+				if(v.dataset.number == 0){
+					v.style.transitionDuration = '0s'
+					v.style.transform = 'rotate(0deg)'
+					setTimeout(() => {
+						v.style.transitionDuration = '.8s'
+					},0)
+				}
+			})
+		})
+
+		setInterval(handler,1000)
+
+	</script>
+</body>
+</html>
