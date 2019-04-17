@@ -1,4 +1,4 @@
-#clock
+# clock
 包含两部分：   
 * canvasClock   
 * Douyin-text-clock   
