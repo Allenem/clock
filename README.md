@@ -4,4 +4,4 @@
 * Douyin-text-clock   
    
 预览   
-https://Allenem.github.io/clock/
+https://Allenem.github.io/clock/index.html
